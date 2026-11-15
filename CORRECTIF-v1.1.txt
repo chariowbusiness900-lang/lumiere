@@ -1,0 +1,4 @@
+CORRECTIF v1.1 — 15 nov 2026
+Bug corrige : Vite cherchait index.html a la racine.
+Fix : vite.config.js -> root: 'src', build.outDir: '../dist', server.port: 1420
+Action : supprime l'ancien dossier, dezippe ce nouveau zip, relance CREER-EXE.bat

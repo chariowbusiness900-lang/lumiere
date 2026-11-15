@@ -1,0 +1,7 @@
+SI TU AS ENCORE 'link.exe not found' :
+1. Telecharge Build Tools : https://visualstudio.microsoft.com/downloads/ -> 'Build Tools for Visual Studio 2022'
+2. Lance vs_BuildTools.exe
+3. Coche OBLIGATOIRE : 'Developpement Desktop avec C++' (Desktop development with C++)
+4. Installe, REDEMARRE ton PC
+5. Relance CREER-EXE.bat
+VS Code seul ne suffit PAS, il faut les Build Tools.
