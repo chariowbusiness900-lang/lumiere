@@ -1,0 +1,30 @@
+LUMIERE — GUIDE GITHUB ACTIONS (sans rien installer)
+Tu n'as plus besoin de Build Tools, Node ou Rust sur ton PC.
+GitHub build le .exe pour toi sur windows-latest.
+
+ETAPE 1 — Creer le repo
+1. github.com > + > New repository
+2. Nom : lumiere-lecteur-musique | Public
+3. Create repository
+
+ETAPE 2 — Uploader ce dossier (sans git)
+1. Dans ton repo, Add file > Upload files
+2. Glisse TOUT le contenu de ce zip dezippe (src/, src-tauri/, .github/, package.json, etc.)
+   IMPORTANT : verifie que .github/workflows/build-release.yml est bien uploade.
+   GitHub cache parfois les dossiers qui commencent par . , verifie dans l'arborescence.
+3. Commit changes
+
+ETAPE 3 — Lancer le build
+1. Dans ton repo, a droite, Releases > Draft a new release
+2. Choose a tag : tape v1.0.0 > Create new tag on publish
+3. Release title : LUMIERE v1.0.0
+4. Publish release
+5. Onglet Actions en haut, tu verras 'Build .exe LUMIERE' tourner (3-8 min)
+
+ETAPE 4 — Recuperer le .exe
+1. Quand Actions est vert, retourne dans Releases
+2. Telecharge LUMIERE-Setup.exe
+3. Si Windows dit 'editeur inconnu' : Informations complementaires -> Executer quand meme
+
+OPTION signature plus tard : genere cert.pfx avec scripts/generate-cert.ps1,
+puis GitHub > Settings > Secrets > Actions, ajoute SIGNING_PFX_BASE64 + SIGNING_PFX_PASSWORD.
