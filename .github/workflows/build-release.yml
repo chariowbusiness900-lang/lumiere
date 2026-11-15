@@ -1,8 +1,8 @@
-name: Build .exe LUMIERE (Windows)
+name: Build .exe LUMIERE
 
 on:
-  push:
-    tags: [ "v*" ]
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -14,50 +14,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node 20
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      - name: Setup Rust stable-msvc
+
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-      - name: Install deps
-        run: npm ci
-      - name: Build Tauri (NSIS + exe)
-        run: npm run tauri build
-      - name: Lister les fichiers construits
-        shell: pwsh
-        run: |
-          Get-ChildItem -Recurse src-tauri/target/release/bundle | Select-Object FullName, Length
-      - name: Signature auto-signee (si secrets presents, sinon on saute)
-        if: ${{ secrets.SIGNING_PFX_BASE64 != '' }}
-        shell: pwsh
-        run: |
-          $pfxBytes = [Convert]::FromBase64String($env:SIGNING_PFX_BASE64)
-          [IO.File]::WriteAllBytes("cert.pfx", $pfxBytes)
-          $pwd = ConvertTo-SecureString $env:SIGNING_PFX_PASSWORD -AsPlainText -Force
-          Import-PfxCertificate -FilePath cert.pfx -CertStoreLocation Cert:\CurrentUser\My -Password $pwd | Out-Null
-          $cert = Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -like "*LUMIERE*" } | Select-Object -First 1
-          $sdk = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Recurse -Filter signtool.exe | Select-Object -First 1 -ExpandProperty FullName
-          Get-ChildItem -Recurse -Filter *.exe src-tauri/target/release/bundle | ForEach-Object { & $sdk sign /sha1 $cert.Thumbprint /tr http://timestamp.digicert.com /td sha256 /fd sha256 /v $_.FullName }
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build avec Tauri
+        uses: tauri-apps/tauri-action@v0
         env:
-          SIGNING_PFX_BASE64: ${{ secrets.SIGNING_PFX_BASE64 }}
-          SIGNING_PFX_PASSWORD: ${{ secrets.SIGNING_PFX_PASSWORD }}
-      - name: Generer SHA256SUMS.txt
-        shell: pwsh
-        run: |
-          Get-ChildItem -Recurse src-tauri/target/release/bundle -Include *.exe,*.msi | ForEach-Object { (Get-FileHash $_.FullName -Algorithm SHA256).Hash + "  " + $_.Name } | Out-File SHA256SUMS.txt
-          Get-Content SHA256SUMS.txt
-      - name: Publier en Release GitHub
-        uses: softprops/action-gh-release@v2
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          files: |
-            src-tauri/target/release/bundle/nsis/*.exe
-            src-tauri/target/release/bundle/msi/*.msi
-            SHA256SUMS.txt
-          body: |
-            LUMIERE v1 - Lecteur local, design Fluent Windows 11, theme adaptatif a la pochette.
-            Filtres : <60s ou <100 Ko = ignores (modifiables dans Parametres).
-            Si Windows dit « editeur inconnu » : Informations complementaires -> Executer quand meme.
-          draft: false
+          tagName: ${{ github.ref_name }}
+          releaseName: 'LUMIERE ${{ github.ref_name }}'
+          releaseBody: 'Version Windows de LUMIERE - lecteur musique Fluent.'
+          releaseDraft: false
           prerelease: false
